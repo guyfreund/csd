@@ -53,6 +53,8 @@ class RolloutWorker:
         and `g` arrays accordingly.
         """
         obs = self.envs[i].reset()
+        if isinstance(obs, tuple):
+            obs = obs[0]
         if isinstance(obs, dict):
             self.g[i] = obs['desired_goal']
             if isinstance(generated_goal, np.ndarray):
@@ -258,4 +260,7 @@ class RolloutWorker:
         """Seeds each environment with a distinct seed derived from the passed in global seed.
         """
         for idx, env in enumerate(self.envs):
-            env.seed(seed + 1000 * idx)
+            try:
+                env.seed(seed + 1000 * idx)
+            except AttributeError:
+                np.random.seed(seed)

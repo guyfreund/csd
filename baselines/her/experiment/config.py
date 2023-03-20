@@ -2,7 +2,7 @@ from copy import deepcopy
 import numpy as np
 import json
 import os
-import gym
+import gymnasium as gym
 
 from baselines import logger
 from baselines.her.ddpg import DDPG
@@ -101,15 +101,15 @@ def prepare_params(kwargs):
             env = MazeEnv(n=10)
         elif env_name == 'Kitchen':
             from d4rl_alt.kitchen.kitchen_envs import KitchenMicrowaveKettleLightTopLeftBurnerV0Custom
-            from gym.wrappers.time_limit import TimeLimit
+            from time_limit_env import TimeLimitEnv
             env = KitchenMicrowaveKettleLightTopLeftBurnerV0Custom(control_mode='end_effector')
-            env = TimeLimit(env, max_episode_steps=kwargs['max_path_length'])
+            env = TimeLimitEnv(env, max_episode_steps=kwargs['max_path_length'])
         else:
             env = gym.make(env_name)
             if 'max_path_length' in kwargs:
                 env = env.env
-                from gym.wrappers.time_limit import TimeLimit
-                env = TimeLimit(env, max_episode_steps=kwargs['max_path_length'])
+                from time_limit_env import TimeLimitEnv
+                env = TimeLimitEnv(env, max_episode_steps=kwargs['max_path_length'])
         return env
     kwargs['make_env'] = make_env
     tmp_env = cached_make_env(kwargs['make_env'])
@@ -225,7 +225,9 @@ def configure_ddpg(dims, params, pretrain_weights, reuse=False, use_mpi=True, cl
 def configure_dims(params):
     env = cached_make_env(params['make_env'])
     env.reset()
-    obs, _, _, info = env.step(env.action_space.sample())
+    data = env.step(env.action_space.sample())
+    obs = data[0]
+    info = data[-1]
 
     if isinstance(obs, dict):
         dims = {

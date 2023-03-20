@@ -5,7 +5,7 @@ import time
 from collections import defaultdict
 
 import click
-import gym
+import gymnasium as gym
 import numpy as np
 import json
 from mpi4py import MPI
@@ -488,17 +488,17 @@ def launch(
             env = MazeEnv(n=max_path_length)
         elif env_name == 'Kitchen':
             from d4rl_alt.kitchen.kitchen_envs import KitchenMicrowaveKettleLightTopLeftBurnerV0Custom
-            from gym.wrappers.time_limit import TimeLimit
+            from time_limit_env import TimeLimitEnv
             env = KitchenMicrowaveKettleLightTopLeftBurnerV0Custom(control_mode='end_effector')
             max_episode_steps = max_path_length
-            env = TimeLimit(env, max_episode_steps=max_episode_steps)
+            env = TimeLimitEnv(env, max_episode_steps=max_episode_steps)
         else:
             env = gym.make(env_name)
             if 'max_path_length' in params:
                 env = env.env
-                from gym.wrappers.time_limit import TimeLimit
+                from time_limit_env import TimeLimitEnv
                 max_episode_steps = params['max_path_length']
-                env = TimeLimit(env, max_episode_steps=max_episode_steps)
+                env = TimeLimitEnv(env, max_episode_steps=max_episode_steps)
 
         return env
 
